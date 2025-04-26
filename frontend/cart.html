@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delicos Cart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(-45deg, #FFD54F, #FF7043, #FFC107, #FF5722),
+        url('intro.png') no-repeat center center/cover;
+      background-size: 400% 400%, cover;
+      animation: gradientBG 15s ease infinite;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes gradientBG {
+      0% {
+        background-position: 0% 50%, center;
+      }
+
+      50% {
+        background-position: 100% 50%, center;
+      }
+
+      100% {
+        background-position: 0% 50%, center;
+      }
+    }
+
+    .cart-item {
+      transition: transform 0.3s ease;
+    }
+
+    .cart-item:hover {
+      transform: translateY(-5px);
+    }
+
+    .quantity-btn {
+      background-color: #FF5722;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .quantity-btn:hover {
+      background-color: #E64A19;
+    }
+
+    .remove-btn {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .remove-btn:hover {
+      background-color: #d32f2f;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen font-sans">
+  <div class="absolute top-4 left-4 z-50">
+    <a href="menu.html">
+      <button class="bg-white text-orange-500 p-3 rounded-full shadow-lg hover:bg-orange-100">
+        <span class="text-2xl">←</span>
+      </button>
+    </a>
+  </div>
+
+  <div class="w-full text-center py-10">
+    <h1 class="text-5xl font-extrabold text-white drop-shadow-md tracking-wide mb-2">🛒 Your Cart</h1>
+    <p class="text-xl font-medium text-orange-100">Review your delicious choices</p>
+  </div>
+
+  <div class="p-6 max-w-4xl mx-auto">
+    <div class="bg-white bg-opacity-90 rounded-xl shadow-lg p-6 mb-6" id="cart-items-container">
+      <p id="empty-cart-message" class="text-center text-gray-600 py-10">Your cart is empty</p>
+    </div>
+
+    <div class="bg-white bg-opacity-90 rounded-xl shadow-lg p-6">
+      <h2 class="text-2xl font-bold text-orange-500 mb-4">Order Summary</h2>
+      <div class="flex justify-between mb-2">
+        <span class="text-gray-700">Subtotal:</span>
+        <span class="font-semibold" id="subtotal">₹0.00</span>
+      </div>
+      <div class="flex justify-between mb-2">
+        <span class="text-gray-700">Tax (5%):</span>
+        <span class="font-semibold" id="tax">₹0.00</span>
+      </div>
+      <div class="flex justify-between mb-4">
+        <span class="text-gray-700">Delivery Fee:</span>
+        <span class="font-semibold" id="delivery-fee">₹40.00</span>
+      </div>
+      <div class="border-t border-gray-300 pt-4 flex justify-between">
+        <span class="text-xl font-bold text-orange-500">Total:</span>
+        <span class="text-xl font-bold" id="total">₹0.00</span>
+      </div>
+      <button id="checkout-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-full mt-6 text-lg font-semibold transition-colors">
+        Proceed to Checkout
+      </button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const cartItemsContainer = document.getElementById('cart-items-container');
+      const emptyCartMessage = document.getElementById('empty-cart-message');
+      const subtotalEl = document.getElementById('subtotal');
+      const taxEl = document.getElementById('tax');
+      const totalEl = document.getElementById('total');
+      const deliveryFeeEl = document.getElementById('delivery-fee');
+      const checkoutBtn = document.getElementById('checkout-btn');
+
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+      const renderCartItems = () => {
+        cartItemsContainer.innerHTML = '';
+
+        if (cart.length === 0) {
+          emptyCartMessage.classList.remove('hidden');
+          checkoutBtn.disabled = true;
+          checkoutBtn.classList.add('opacity-50');
+
+          // Reset summary when cart is empty
+          subtotalEl.textContent = `₹0.00`;
+          taxEl.textContent = `₹0.00`;
+          deliveryFeeEl.textContent = `₹40.00`;
+          totalEl.textContent = `₹40.00`;
+
+          return;
+        } else {
+          emptyCartMessage.classList.add('hidden');
+          checkoutBtn.disabled = false;
+          checkoutBtn.classList.remove('opacity-50');
+        }
+
+        cart.forEach((item, index) => {
+          const cartItem = document.createElement('div');
+          cartItem.classList.add('cart-item', 'flex', 'justify-between', 'items-center', 'p-4', 'mb-4', 'bg-white', 'rounded-lg', 'shadow-md');
+
+          cartItem.innerHTML = `
+            <div class="flex items-center">
+              <img src="${item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2080&auto=format&fit=crop'}" 
+                   alt="${item.name}" class="w-16 h-16 object-cover rounded-lg mr-4">
+              <div>
+                <h3 class="font-semibold text-lg text-orange-500">${item.name}</h3>
+                <p class="text-gray-600">₹${item.price} each</p>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <button class="quantity-btn decrease" data-index="${index}">-</button>
+              <span class="mx-3 font-semibold">${item.quantity}</span>
+              <button class="quantity-btn increase" data-index="${index}">+</button>
+              <span class="ml-6 font-semibold w-20 text-right">₹${(item.price * item.quantity).toFixed(2)}</span>
+              <button class="remove-btn ml-4" data-index="${index}">Remove</button>
+            </div>
+          `;
+
+          cartItemsContainer.appendChild(cartItem);
+        });
+
+        updateTotals();
+      };
+
+      const updateTotals = () => {
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const tax = subtotal * 0.05;
+        const deliveryFee = 40;  // Fixed delivery fee
+        const total = subtotal + tax + deliveryFee;
+
+        subtotalEl.textContent = `₹${subtotal.toFixed(2)}`;
+        taxEl.textContent = `₹${tax.toFixed(2)}`;
+        deliveryFeeEl.textContent = `₹${deliveryFee.toFixed(2)}`;
+        totalEl.textContent = `₹${total.toFixed(2)}`;
+      };
+
+      const updateCart = () => {
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCartItems();
+      };
+
+      cartItemsContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('decrease')) {
+          const index = e.target.getAttribute('data-index');
+          if (cart[index].quantity > 1) {
+            cart[index].quantity--;
+          } else {
+            cart.splice(index, 1);
+          }
+          updateCart();
+        } else if (e.target.classList.contains('increase')) {
+          const index = e.target.getAttribute('data-index');
+          cart[index].quantity++;
+          updateCart();
+        } else if (e.target.classList.contains('remove-btn')) {
+          const index = e.target.getAttribute('data-index');
+          cart.splice(index, 1);
+          updateCart();
+        }
+      });
+
+      checkoutBtn.addEventListener('click', () => {
+        if (cart.length === 0) {
+          alert('Your cart is empty!');
+          return;
+        }
+        // Redirect to checkout page
+        window.location.href = 'checkout.html';
+      });
+
+      renderCartItems();
+    });
+  </script>
+</body>
+</html>

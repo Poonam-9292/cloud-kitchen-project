@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation | Delicos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #FFF8F5;
+    }
+    
+    .confirmation-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(255, 87, 34, 0.1);
+      transform: translateY(0);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .confirmation-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(255, 87, 34, 0.15);
+    }
+    
+    .order-status {
+      position: relative;
+      padding-left: 30px;
+    }
+    
+    .status-step {
+      position: relative;
+      padding-bottom: 30px;
+    }
+    
+    .status-step:last-child {
+      padding-bottom: 0;
+    }
+    
+    .status-step::before {
+      content: '';
+      position: absolute;
+      left: -22px;
+      top: 5px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #E0E0E0;
+      z-index: 2;
+    }
+    
+    .status-step.active::before {
+      background: #4CAF50;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    }
+    
+    .status-step.completed::before {
+      background: #4CAF50;
+    }
+    
+    .status-step::after {
+      content: '';
+      position: absolute;
+      left: -17px;
+      top: 5px;
+      width: 2px;
+      height: 100%;
+      background: #E0E0E0;
+    }
+    
+    .status-step:last-child::after {
+      display: none;
+    }
+    
+    .status-step.completed::after {
+      background: #4CAF50;
+    }
+    
+    .delivery-man {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .order-item {
+      transition: all 0.3s ease;
+    }
+    
+    .order-item:hover {
+      transform: translateX(5px);
+    }
+    
+    .food-thumbnail {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .track-order-btn {
+      background: linear-gradient(135deg, #FF5722, #FF9800);
+      transition: all 0.3s;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+    }
+    
+    .track-order-btn:hover {
+      background: linear-gradient(135deg, #E64A19, #F57C00);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(255, 87, 34, 0.3);
+    }
+    
+    .back-to-menu-btn {
+      transition: all 0.3s;
+      border: 2px solid #FF5722;
+    }
+    
+    .back-to-menu-btn:hover {
+      background: #FF5722;
+      color: white;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen">
+  <div class="container mx-auto px-4 py-12 max-w-4xl">
+    <!-- Order Confirmation Card -->
+    <div class="confirmation-card p-8 mb-10 text-center">
+      <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-800 mb-2 font-playfair">Order Confirmed!</h1>
+      <p class="text-gray-600 mb-6">Thank you for your order. We've received it and are preparing your food.</p>
+      
+      <div class="bg-orange-50 border border-orange-100 rounded-lg p-4 inline-block">
+        <div class="flex items-center justify-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+          </svg>
+          <span class="font-medium text-orange-600">Estimated delivery: <span id="delivery-time">30-40 minutes</span></span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      <!-- Order Summary -->
+      <div class="bg-white p-6 rounded-xl shadow-sm col-span-2">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 font-playfair">Your Order</h2>
+        
+        <div id="order-items-container" class="space-y-4 mb-6">
+          <!-- Order items will be inserted here dynamically -->
+        </div>
+        
+        <div class="border-t border-gray-200 pt-4 space-y-2">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Subtotal</span>
+            <span class="font-medium" id="order-subtotal">₹0.00</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Tax (5%)</span>
+            <span class="font-medium" id="order-tax">₹0.00</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Delivery Fee</span>
+            <span class="font-medium" id="order-delivery">₹40.00</span>
+          </div>
+          <div class="flex justify-between pt-2">
+            <span class="font-bold text-lg">Total</span>
+            <span class="font-bold text-lg" id="order-total">₹0.00</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Order Tracking -->
+      <div class="bg-white p-6 rounded-xl shadow-sm">
+        <h2 class="text-xl font-bold text-gray-800 mb-6 font-playfair">Order Status</h2>
+        
+        <div class="order-status">
+          <div class="status-step active">
+            <h3 class="font-medium text-gray-800">Order Confirmed</h3>
+            <p class="text-sm text-gray-500">We've received your order</p>
+          </div>
+          
+          <div class="status-step">
+            <h3 class="font-medium text-gray-800">Preparing Food</h3>
+            <p class="text-sm text-gray-500">Our chef is working on it</p>
+          </div>
+          
+          <div class="status-step">
+            <h3 class="font-medium text-gray-800">On the Way</h3>
+            <p class="text-sm text-gray-500">Delivery partner has picked up</p>
+          </div>
+          
+          <div class="status-step">
+            <h3 class="font-medium text-gray-800">Delivered</h3>
+            <p class="text-sm text-gray-500">Enjoy your meal!</p>
+          </div>
+        </div>
+        
+        <div class="mt-8 text-center">
+          <div class="delivery-man inline-block mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+            </svg>
+          </div>
+          <p class="text-sm text-gray-500 mb-4">Your delivery partner will arrive soon</p>
+          <button class="track-order-btn text-white px-6 py-3 rounded-lg text-sm font-semibold w-full">
+            TRACK ORDER
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Delivery Details -->
+    <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+      <h2 class="text-xl font-bold text-gray-800 mb-4 font-playfair">Delivery Details</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-medium text-gray-700 mb-2">Delivery Address</h3>
+          <p id="delivery-address" class="text-gray-600">123 Main Street, Apt 4B<br>New York, NY 10001</p>
+        </div>
+        
+        <div>
+          <h3 class="font-medium text-gray-700 mb-2">Contact Information</h3>
+          <p id="delivery-contact" class="text-gray-600">John Doe<br>+1 (555) 123-4567</p>
+        </div>
+        
+        <div>
+          <h3 class="font-medium text-gray-700 mb-2">Payment Method</h3>
+          <p id="payment-method" class="text-gray-600">Cash on Delivery</p>
+        </div>
+        
+        <div>
+          <h3 class="font-medium text-gray-700 mb-2">Order Number</h3>
+          <p id="order-number" class="text-gray-600">#DEL-<span id="order-id">${Math.floor(100000 + Math.random() * 900000)}</span></p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row justify-center gap-4">
+      <a href="menu.html" class="back-to-menu-btn text-orange-500 px-6 py-3 rounded-lg text-sm font-semibold text-center border">
+        BACK TO MENU
+      </a>
+      <button class="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors">
+        NEED HELP?
+      </button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Generate random delivery time between 30-45 minutes
+      const deliveryTime = ${30 + Math.floor(Math.random() * 16)}-${45 + Math.floor(Math.random() * 16)} minutes;
+      document.getElementById('delivery-time').textContent = deliveryTime;
+      
+      // Simulate order status updates
+      function updateOrderStatus() {
+        const steps = document.querySelectorAll('.status-step');
+        let currentActive = 0;
+        
+        const interval = setInterval(() => {
+          if (currentActive > 0) {
+            steps[currentActive - 1].classList.remove('active');
+            steps[currentActive - 1].classList.add('completed');
+          }
+          
+          if (currentActive < steps.length) {
+            steps[currentActive].classList.add('active');
+            currentActive++;
+          } else {
+            clearInterval(interval);
+          }
+        }, 5000);
+      }
+      
+      // Start with just the first step active
+      setTimeout(updateOrderStatus, 2000);
+      
+      // In a real app, you would fetch this from your backend or localStorage
+      // For demo, we'll use sample data
+      const orderItems = [
+        { name: "Biryani", price: 250, quantity: 1, image: "pictures/biryani.webp" },
+        { name: "Garlic Naan", price: 50, quantity: 2, image: "pictures/naan.jpg" },
+        { name: "Mango Lassi", price: 80, quantity: 1, image: "pictures/lassi.jpg" }
+      ];
+      
+      // Render order items
+      const orderItemsContainer = document.getElementById('order-items-container');
+      orderItems.forEach(item => {
+        const orderItem = document.createElement('div');
+        orderItem.classList.add('order-item', 'flex', 'justify-between', 'items-center');
+        
+        orderItem.innerHTML = `
+          <div class="flex items-center space-x-4">
+            <img src="${item.image}" alt="${item.name}" class="food-thumbnail">
+            <div>
+              <h3 class="font-medium text-gray-800">${item.name}</h3>
+              <p class="text-sm text-gray-500">${item.quantity} × ₹${item.price}</p>
+            </div>
+          </div>
+          <span class="font-medium">₹${(item.price * item.quantity).toFixed(2)}</span>
+        `;
+        
+        orderItemsContainer.appendChild(orderItem);
+      });
+      
+      // Calculate totals
+      const subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const tax = subtotal * 0.05;
+      const deliveryFee = 40;
+      const total = subtotal + tax + deliveryFee;
+      
+      document.getElementById('order-subtotal').textContent = ₹${subtotal.toFixed(2)};
+      document.getElementById('order-tax').textContent = ₹${tax.toFixed(2)};
+      document.getElementById('order-delivery').textContent = ₹${deliveryFee.toFixed(2)};
+      document.getElementById('order-total').textContent = ₹${total.toFixed(2)};
+      
+      // In a real app, you would get these from the checkout form
+      document.getElementById('delivery-address').textContent = 123 Foodie Street\nMumbai, MH 400001;
+      document.getElementById('delivery-contact').textContent = Rahul Sharma\n+91 98765 43210;
+      document.getElementById('payment-method').textContent = Cash on Delivery;
+    });
+  </script>
+</body>
+</html>
